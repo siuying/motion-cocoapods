@@ -28,6 +28,7 @@ end
 
 require 'cocoapods'
 require 'yaml'
+require 'benchmark'
 
 module Motion::Project
   class Config
@@ -36,11 +37,24 @@ module Motion::Project
     def pods(&block)
       @pods ||= Motion::Project::CocoaPods.new(self)
       if block
-        unless ENV['COCOAPODS_NO_UPDATE']
-          Pod::Command::Repo.new(Pod::Command::ARGV.new(["update"])).run
+
+        update_time = Benchmark.realtime do
+          unless ENV['COCOAPODS_NO_UPDATE']
+            Pod::Command::Repo.new(Pod::Command::ARGV.new(["update"])).run
+          end
         end
-        @pods.instance_eval(&block)
-        @pods.install!
+
+        pods_eval_time = Benchmark.realtime do
+          @pods.instance_eval(&block)
+        end
+
+        pods_install_time = Benchmark.realtime do
+          @pods.install!
+        end
+
+        puts "Update Pods:\t#{update_time*1000} ms"
+        puts "Eval Pods:\t#{pods_eval_time*1000} ms"
+        puts "Install Pods:\t#{pods_install_time*1000} ms"
       end
       @pods
     end
