@@ -28,12 +28,15 @@ end
 
 require 'cocoapods'
 require 'yaml'
+require 'pry'
 
 module Motion::Project
   class Config
     variable :pods
 
     def pods(&block)
+      binding.pry
+
       @pods ||= Motion::Project::CocoaPods.new(self)
       if block
         unless ENV['COCOAPODS_NO_UPDATE']
